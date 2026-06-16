@@ -1,1 +1,221 @@
 
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Allocation Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .calculator-container { max-width: 900px; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 2.5rem; }
+        .asset-grid { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 0.2fr; gap: 1rem; align-items: center; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input::placeholder { color: #9ca3af; font-style: italic; }
+        @media (max-width: 768px) { .asset-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 p-4 md:p-8">
+    <div class="max-w-[900px] mx-auto w-full">
+        <header class="py-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-semibold">← Back to Home</a>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Asset Allocation Calculator</h1>
+            </div>
+            <button onclick="toggleTheme()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                Toggle Theme
+            </button>
+        </header>
+        
+        <main class="calculator-container bg-white dark:bg-gray-800">
+            <div class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                <label class="text-lg font-bold text-gray-700 dark:text-gray-300">Portfolio Total ($):</label>
+                <input type="text" id="portfolioTotalDisplay" value="$100,000" 
+                       class="text-2xl font-black text-blue-800 dark:text-blue-300 bg-transparent border-b-2 border-blue-200 dark:border-blue-700 focus:outline-none w-48 text-right" 
+                       onfocus="convertToRaw(this)" onblur="formatPortfolioDisplay(this)">
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Your Asset Allocations</h2>
+                <button onclick="addAsset()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">+ Add Asset</button>
+            </div>
+
+            <div class="asset-grid px-3 mb-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">
+                <div>Asset Name</div>
+                <div>Asset Type</div>
+                <div>Amount ($)</div>
+                <div class="text-center">Percentage (%)</div>
+                <div></div>
+            </div>
+
+            <div id="userAssetsContainer" class="space-y-4"></div>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-t border-gray-200 dark:border-gray-700 pt-8">
+                <div class="h-64"><canvas id="portfolioPieChart"></canvas></div>
+                <table class="w-full text-left">
+                    <thead><tr class="text-gray-600 dark:text-gray-400 uppercase text-xs border-b border-gray-200 dark:border-gray-700">
+                        <th class="py-2">Category</th><th class="py-2">Target</th><th class="py-2">Actual</th><th class="py-2">Diff</th>
+                    </tr></thead>
+                    <tbody id="portfolioTableBody" class="text-gray-900 dark:text-gray-100"></tbody>
+                </table>
+            </div>
+
+            <div class="mt-12 space-y-8">
+                <div class="bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Original Ray Dalio All Weather Asset Allocation</h3>
+                    <p class="mb-4 text-gray-700 dark:text-gray-300">The traditional All Weather portfolio is built with the following allocation:</p>
+                    <ul class="list-disc ml-5 space-y-1 mb-6 text-gray-700 dark:text-gray-300">
+                        <li><strong>30% Stocks:</strong> (US Equity Market)</li>
+                        <li><strong>40% Long-term Bonds:</strong> (20+ year Treasury bonds)</li>
+                        <li><strong>15% Intermediate-term Bonds:</strong> (7-10 year Treasury bonds)</li>
+                        <li><strong>7.5% Commodities:</strong> (Broad commodities exposure)</li>
+                        <li><strong>7.5% Gold:</strong> (Inflation hedge)</li>
+                    </ul>
+                    <h4 class="font-bold mb-2 text-gray-900 dark:text-white">Key Principles:</h4>
+                    <ul class="list-disc ml-5 space-y-1 text-gray-700 dark:text-gray-300">
+                        <li><strong>Risk Parity Approach:</strong> Each asset class contributes equally to portfolio risk.</li>
+                        <li><strong>Economic Environment Diversification:</strong> Performs across different growth/inflation scenarios.</li>
+                        <li><strong>Lower Volatility:</strong> Designed to reduce drawdowns compared to traditional stock/bond portfolios.</li>
+                        <li><strong>All Weather:</strong> Works in rising/falling growth and rising/falling inflation environments.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Targeting Returns with Stock Proxies</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        While the All Weather portfolio traditionally uses ETFs for broad exposure, you can enhance your strategy by selecting individual stocks that serve as proxies for these asset classes. This approach allows you to "tilt" your portfolio toward higher-quality or higher-growth companies within a specific category, potentially outperforming the broad benchmark while maintaining the core diversification principles.
+                    </p>
+                    <ul class="list-disc ml-5 space-y-1 text-gray-700 dark:text-gray-300">
+                        <li><strong>Identify Proxies:</strong> Replace a broad Stock ETF with individual companies that exhibit dominant market positions.</li>
+                        <li><strong>Categorize Effectively:</strong> Use the "Asset Type" dropdown for your selected stocks to ensure they are still counted correctly toward your desired allocation targets.</li>
+                        <li><strong>Benchmark Comparison:</strong> Use the "Diff" column in the table above to see how your targeted stock positions compare to the baseline Ray Dalio All Weather weights.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            renderChart(getPortfolioTotal()); 
+        }
+
+        const assetTypes = ["Stocks", "Long-term Bonds", "Intermediate Bonds", "Commodities", "Gold", "Crypto"];
+        const targets = { "Stocks": 30, "Long-term Bonds": 40, "Intermediate Bonds": 15, "Commodities": 7.5, "Gold": 7.5, "Crypto": 0 };
+        
+        let assets = [
+            { name: "VOO", type: "Stocks", amount: 30000 },
+            { name: "TLT", type: "Long-term Bonds", amount: 40000 },
+            { name: "IEI", type: "Intermediate Bonds", amount: 15000 },
+            { name: "DBC", type: "Commodities", amount: 7500 },
+            { name: "GLD", type: "Gold", amount: 7500 }
+        ];
+        
+        let chart;
+
+        function convertToRaw(el) {
+            el.value = el.value.replace(/[^0-9]/g, '');
+        }
+
+        function formatPortfolioDisplay(el) {
+            const val = parseFloat(el.value) || 0;
+            el.value = '$' + val.toLocaleString();
+            updateUI();
+        }
+
+        function formatAssetInput(el, idx) {
+            const val = parseFloat(el.value.replace(/[^0-9]/g, '')) || 0;
+            assets[idx].amount = val;
+            el.value = val.toLocaleString();
+            updateUI();
+        }
+
+        function getPortfolioTotal() {
+            const totalStr = document.getElementById('portfolioTotalDisplay').value;
+            return parseFloat(totalStr.replace(/[^0-9]/g, '')) || 0;
+        }
+
+        function updateUI() {
+            const total = getPortfolioTotal();
+            const container = document.getElementById('userAssetsContainer');
+            
+            container.innerHTML = '';
+            assets.forEach((asset, idx) => {
+                container.innerHTML += `
+                    <div class="asset-grid bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <input type="text" value="${asset.name}" placeholder="Asset Name/Symbol" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" onchange="assets[${idx}].name = this.value">
+                        <select class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" onchange="assets[${idx}].type = this.value; updateUI()">
+                            ${assetTypes.map(t => `<option ${asset.type === t ? 'selected' : ''}>${t}</option>`).join('')}
+                        </select>
+                        <input type="text" value="${asset.amount.toLocaleString()}" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" 
+                               onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                               onblur="formatAssetInput(this, ${idx})">
+                        <div class="text-center font-bold text-gray-700 dark:text-gray-300">${((asset.amount/total)*100 || 0).toFixed(1)}%</div>
+                        <button onclick="assets.splice(${idx},1); updateUI()" class="text-red-400 dark:text-red-300 font-bold">✕</button>
+                    </div>`;
+            });
+            renderComparison(total);
+            renderChart(total);
+        }
+
+        function renderChart(total) {
+            const ctx = document.getElementById('portfolioPieChart').getContext('2d');
+            const dataMap = assetTypes.reduce((acc, type) => {
+                acc[type] = assets.filter(a => a.type === type).reduce((sum, a) => sum + a.amount, 0);
+                return acc;
+            }, {});
+
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(dataMap),
+                    datasets: [{
+                        data: Object.values(dataMap),
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#a855f7', '#6366f1']
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: document.documentElement.classList.contains('dark') ? '#fff' : '#666' } }
+                    }
+                }
+            });
+        }
+
+        function addAsset() {
+            assets.push({ name: "", type: "Stocks", amount: 0 });
+            updateUI();
+        }
+
+        function renderComparison(total) {
+            const tbody = document.getElementById('portfolioTableBody');
+            tbody.innerHTML = '';
+            Object.entries(targets).forEach(([cat, target]) => {
+                const actual = assets.filter(a => a.type === cat).reduce((sum, a) => sum + a.amount, 0);
+                const actualPct = total > 0 ? (actual / total) * 100 : 0;
+                tbody.innerHTML += `<tr>
+                    <td class="py-2 text-sm">${cat}</td>
+                    <td class="py-2 text-sm">${target}%</td>
+                    <td class="py-2 text-sm">${actualPct.toFixed(1)}%</td>
+                    <td class="py-2 text-sm font-bold ${actualPct - target >= -0.1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
+                        ${(actualPct - target).toFixed(1)}%
+                    </td>
+                </tr>`;
+            });
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
