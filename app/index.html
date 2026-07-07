@@ -34,7 +34,7 @@
         
         <main class="calculator-container bg-white dark:bg-gray-800">
             <div class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-                <label class="text-lg font-bold text-gray-700 dark:text-gray-300">Portfolio Total ($):</label>
+                <label class="text-lg font-bold text-gray-700 dark:bg-gray-800">Portfolio Total ($):</label>
                 <input type="text" id="portfolioTotalDisplay" value="$100,000" 
                        class="text-2xl font-black text-blue-800 dark:text-blue-300 bg-transparent border-b-2 border-blue-200 dark:border-blue-700 focus:outline-none w-48 text-right" 
                        onfocus="convertToRaw(this)" onblur="formatPortfolioDisplay(this)">
@@ -76,25 +76,6 @@
                         <li><strong>7.5% Commodities:</strong> (Broad commodities exposure)</li>
                         <li><strong>7.5% Gold:</strong> (Inflation hedge)</li>
                     </ul>
-                    <h4 class="font-bold mb-2 text-gray-900 dark:text-white">Key Principles:</h4>
-                    <ul class="list-disc ml-5 space-y-1 text-gray-700 dark:text-gray-300">
-                        <li><strong>Risk Parity Approach:</strong> Each asset class contributes equally to portfolio risk.</li>
-                        <li><strong>Economic Environment Diversification:</strong> Performs across different growth/inflation scenarios.</li>
-                        <li><strong>Lower Volatility:</strong> Designed to reduce drawdowns compared to traditional stock/bond portfolios.</li>
-                        <li><strong>All Weather:</strong> Works in rising/falling growth and rising/falling inflation environments.</li>
-                    </ul>
-                </div>
-
-                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
-                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Targeting Returns with Stock Proxies</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">
-                        While the All Weather portfolio traditionally uses ETFs for broad exposure, you can enhance your strategy by selecting individual stocks that serve as proxies for these asset classes. This approach allows you to "tilt" your portfolio toward higher-quality or higher-growth companies within a specific category, potentially outperforming the broad benchmark while maintaining the core diversification principles.
-                    </p>
-                    <ul class="list-disc ml-5 space-y-1 text-gray-700 dark:text-gray-300">
-                        <li><strong>Identify Proxies:</strong> Replace a broad Stock ETF with individual companies that exhibit dominant market positions.</li>
-                        <li><strong>Categorize Effectively:</strong> Use the "Asset Type" dropdown for your selected stocks to ensure they are still counted correctly toward your desired allocation targets.</li>
-                        <li><strong>Benchmark Comparison:</strong> Use the "Diff" column in the table above to see how your targeted stock positions compare to the baseline Ray Dalio All Weather weights.</li>
-                    </ul>
                 </div>
             </div>
         </main>
@@ -106,8 +87,8 @@
             renderChart(getPortfolioTotal()); 
         }
 
-        const assetTypes = ["Stocks", "Long-term Bonds", "Intermediate Bonds", "Commodities", "Gold", "Crypto"];
-        const targets = { "Stocks": 30, "Long-term Bonds": 40, "Intermediate Bonds": 15, "Commodities": 7.5, "Gold": 7.5, "Crypto": 0 };
+        const assetTypes = ["Stocks", "Long-term Bonds", "Intermediate Bonds", "Commodities", "Gold", "Crypto", "Cash"];
+        const targets = { "Stocks": 30, "Long-term Bonds": 40, "Intermediate Bonds": 15, "Commodities": 7.5, "Gold": 7.5, "Crypto": 0, "Cash": 0 };
         
         let assets = [
             { name: "VOO", type: "Stocks", amount: 30000 },
@@ -165,14 +146,14 @@
         function renderChart(total) {
             const ctx = document.getElementById('portfolioPieChart').getContext('2d');
             
-            // Map colors specifically for the requested types
             const colorMap = {
                 "Stocks": "#3b82f6",
-                "Long-term Bonds": "#a855f7", // Purple
+                "Long-term Bonds": "#a855f7",
                 "Intermediate Bonds": "#10b981",
                 "Commodities": "#ef4444",
-                "Gold": "#d97706", // Gold/Orange
-                "Crypto": "#6366f1"
+                "Gold": "#d97706",
+                "Crypto": "#4c1d95", // Dark Purple
+                "Cash": "#064e3b" // Dark Green
             };
 
             const labels = assetTypes;
