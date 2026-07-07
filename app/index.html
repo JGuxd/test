@@ -64,27 +64,27 @@
                     <tbody id="portfolioTableBody" class="text-gray-900 dark:text-gray-100"></tbody>
                 </table>
             </div>
-        </main>
 
-        <section class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Ray Dalio All Weather Asset Allocation</h3>
-                <p class="mb-4 text-gray-700 dark:text-gray-300">The traditional All Weather portfolio is built with the following allocation:</p>
-                <ul class="list-disc ml-5 space-y-1 mb-6 text-gray-700 dark:text-gray-300">
-                    <li><strong>30% Stocks:</strong> (US Equity Market)</li>
-                    <li><strong>40% Long-term Bonds:</strong> (20+ year Treasury bonds)</li>
-                    <li><strong>15% Intermediate-term Bonds:</strong> (7-10 year Treasury bonds)</li>
-                    <li><strong>7.5% Commodities:</strong> (Broad commodities exposure)</li>
-                    <li><strong>7.5% Gold:</strong> (Inflation hedge)</li>
-                </ul>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Strategy: Proxy Stocks vs. ETFs</h3>
-                <p class="text-gray-700 dark:text-gray-300">
-                    While ETFs provide broad diversification, some investors choose to use single stocks as proxies for these asset classes. By carefully selecting high-quality companies within an index, you may potentially achieve better results than the market average. However, this strategy increases unsystematic risk, requiring more research and active management compared to the passive, set-and-forget nature of standard ETF investing.
-                </p>
-            </div>
-        </section>
+            <section class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Ray Dalio All Weather Asset Allocation</h3>
+                    <p class="mb-4 text-gray-700 dark:text-gray-300">The traditional All Weather portfolio is built with the following allocation:</p>
+                    <ul class="list-disc ml-5 space-y-1 mb-6 text-gray-700 dark:text-gray-300 text-sm">
+                        <li><strong>30% Stocks:</strong> (US Equity Market)</li>
+                        <li><strong>40% Long-term Bonds:</strong> (20+ year Treasury bonds)</li>
+                        <li><strong>15% Intermediate-term Bonds:</strong> (7-10 year Treasury bonds)</li>
+                        <li><strong>7.5% Commodities:</strong> (Broad commodities exposure)</li>
+                        <li><strong>7.5% Gold:</strong> (Inflation hedge)</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Strategy: Proxy Stocks vs. ETFs</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm">
+                        While ETFs provide broad diversification, some investors choose to use single stocks as proxies for these asset classes. By carefully selecting high-quality companies within an index, you may potentially achieve better results than the market average. However, this strategy increases unsystematic risk, requiring more research and active management compared to the passive, set-and-forget nature of standard ETF investing.
+                    </p>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
@@ -94,6 +94,15 @@
         }
 
         const assetTypes = ["Stocks", "Long-term Bonds", "Intermediate Bonds", "Commodities", "Gold", "Crypto", "Cash"];
+        const colorMap = {
+            "Stocks": "#3b82f6",
+            "Long-term Bonds": "#7e22ce",
+            "Intermediate Bonds": "#10b981",
+            "Commodities": "#ef4444",
+            "Gold": "#fbbf24",
+            "Crypto": "#4c1d95",
+            "Cash": "#064e3b"
+        };
         const targets = { "Stocks": 30, "Long-term Bonds": 40, "Intermediate Bonds": 15, "Commodities": 7.5, "Gold": 7.5, "Crypto": 0, "Cash": 0 };
         
         let assets = [
@@ -107,39 +116,35 @@
         let chart;
 
         function convertToRaw(el) { el.value = el.value.replace(/[^0-9]/g, ''); }
-
-        function formatPortfolioDisplay(el) {
-            const val = parseFloat(el.value) || 0;
-            el.value = '$' + val.toLocaleString();
-            updateUI();
+        function formatPortfolioDisplay(el) { const val = parseFloat(el.value) || 0; el.value = '$' + val.toLocaleString(); updateUI(); }
+        
+        function handleAmountFocus(el, asset) {
+            if (asset.amount === 0) el.value = '';
+            else el.value = el.value.replace(/[^0-9]/g, '');
         }
 
-        function formatAssetInput(el, idx) {
-            const val = parseFloat(el.value.replace(/[^0-9]/g, '')) || 0;
-            assets[idx].amount = val;
-            el.value = val.toLocaleString();
-            updateUI();
+        function formatAssetInput(el, idx) { 
+            const val = parseFloat(el.value.replace(/[^0-9]/g, '')) || 0; 
+            assets[idx].amount = val; 
+            el.value = val.toLocaleString(); 
+            updateUI(); 
         }
-
-        function getPortfolioTotal() {
-            const totalStr = document.getElementById('portfolioTotalDisplay').value;
-            return parseFloat(totalStr.replace(/[^0-9]/g, '')) || 0;
-        }
+        
+        function getPortfolioTotal() { const totalStr = document.getElementById('portfolioTotalDisplay').value; return parseFloat(totalStr.replace(/[^0-9]/g, '')) || 0; }
 
         function updateUI() {
             const total = getPortfolioTotal();
             const container = document.getElementById('userAssetsContainer');
-            
             container.innerHTML = '';
             assets.forEach((asset, idx) => {
                 container.innerHTML += `
                     <div class="asset-grid bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <input type="text" value="${asset.name}" placeholder="Asset Name/Symbol" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" onchange="assets[${idx}].name = this.value">
+                        <input type="text" value="${asset.name}" placeholder="Asset Name" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" onchange="assets[${idx}].name = this.value">
                         <select class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" onchange="assets[${idx}].type = this.value; updateUI()">
                             ${assetTypes.map(t => `<option ${asset.type === t ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
                         <input type="text" value="${asset.amount.toLocaleString()}" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" 
-                               onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                               onfocus="handleAmountFocus(this, assets[${idx}])" 
                                onblur="formatAssetInput(this, ${idx})">
                         <div class="text-center font-bold text-gray-700 dark:text-gray-300">${((asset.amount/total)*100 || 0).toFixed(1)}%</div>
                         <button onclick="assets.splice(${idx},1); updateUI()" class="text-red-400 dark:text-red-300 font-bold">✕</button>
@@ -151,35 +156,16 @@
 
         function renderChart(total) {
             const ctx = document.getElementById('portfolioPieChart').getContext('2d');
-            const dataMap = assetTypes.reduce((acc, type) => {
-                acc[type] = assets.filter(a => a.type === type).reduce((sum, a) => sum + a.amount, 0);
-                return acc;
-            }, {});
-
+            const dataMap = assetTypes.reduce((acc, type) => { acc[type] = assets.filter(a => a.type === type).reduce((sum, a) => sum + a.amount, 0); return acc; }, {});
             if (chart) chart.destroy();
             chart = new Chart(ctx, {
                 type: 'pie',
-                data: {
-                    labels: Object.keys(dataMap),
-                    datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#a855f7', '#6366f1', '#4b5563']
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: document.documentElement.classList.contains('dark') ? '#fff' : '#666' } }
-                    }
-                }
+                data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: assetTypes.map(t => colorMap[t]) }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: document.documentElement.classList.contains('dark') ? '#fff' : '#666' } } } }
             });
         }
 
-        function addAsset() {
-            assets.push({ name: "", type: "Stocks", amount: 0 });
-            updateUI();
-        }
+        function addAsset() { assets.push({ name: "", type: "Stocks", amount: 0 }); updateUI(); }
 
         function renderComparison(total) {
             const tbody = document.getElementById('portfolioTableBody');
@@ -188,17 +174,17 @@
                 const actual = assets.filter(a => a.type === cat).reduce((sum, a) => sum + a.amount, 0);
                 const actualPct = total > 0 ? (actual / total) * 100 : 0;
                 const diff = actualPct - target;
+                let colorClass = "text-gray-500";
+                if (diff > 0.05) colorClass = "text-green-600 dark:text-green-400 font-bold";
+                else if (diff < -0.05) colorClass = "text-red-600 dark:text-red-400 font-bold";
                 tbody.innerHTML += `<tr>
                     <td class="py-2 text-sm text-gray-700 dark:text-gray-300">${cat}</td>
                     <td class="py-2 text-sm text-gray-700 dark:text-gray-300">${target}%</td>
                     <td class="py-2 text-sm text-gray-700 dark:text-gray-300">${actualPct.toFixed(1)}%</td>
-                    <td class="py-2 text-sm font-bold ${diff >= -0.1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
-                        ${diff.toFixed(1)}%
-                    </td>
+                    <td class="py-2 text-sm ${colorClass}">${diff.toFixed(1)}%</td>
                 </tr>`;
             });
         }
-
         updateUI();
     </script>
 </body>
