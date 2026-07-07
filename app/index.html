@@ -164,19 +164,29 @@
 
         function renderChart(total) {
             const ctx = document.getElementById('portfolioPieChart').getContext('2d');
-            const dataMap = assetTypes.reduce((acc, type) => {
-                acc[type] = assets.filter(a => a.type === type).reduce((sum, a) => sum + a.amount, 0);
-                return acc;
-            }, {});
+            
+            // Map colors specifically for the requested types
+            const colorMap = {
+                "Stocks": "#3b82f6",
+                "Long-term Bonds": "#a855f7", // Purple
+                "Intermediate Bonds": "#10b981",
+                "Commodities": "#ef4444",
+                "Gold": "#d97706", // Gold/Orange
+                "Crypto": "#6366f1"
+            };
+
+            const labels = assetTypes;
+            const data = labels.map(type => assets.filter(a => a.type === type).reduce((sum, a) => sum + a.amount, 0));
+            const colors = labels.map(type => colorMap[type]);
 
             if (chart) chart.destroy();
             chart = new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: Object.keys(dataMap),
+                    labels: labels,
                     datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#a855f7', '#6366f1']
+                        data: data,
+                        backgroundColor: colors
                     }]
                 },
                 options: { 
@@ -202,7 +212,6 @@
                 const actualPct = total > 0 ? (actual / total) * 100 : 0;
                 const diff = actualPct - target;
                 
-                // Color logic: neutral if close to 0, green for positive, red for negative
                 let colorClass = 'text-gray-900 dark:text-gray-100';
                 if (diff > 0.1) colorClass = 'text-green-600 dark:text-green-400';
                 else if (diff < -0.1) colorClass = 'text-red-600 dark:text-red-400';
