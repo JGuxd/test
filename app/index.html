@@ -167,12 +167,19 @@
             Object.entries(targets).forEach(([cat, target]) => {
                 const actual = assets.filter(a => a.type === cat).reduce((sum, a) => sum + a.amount, 0);
                 const actualPct = total > 0 ? (actual / total) * 100 : 0;
+                const diff = actualPct - target;
+                
+                // Color logic: neutral if close to 0, green for positive, red for negative
+                let colorClass = 'text-gray-900 dark:text-gray-100';
+                if (diff > 0.1) colorClass = 'text-green-600 dark:text-green-400';
+                else if (diff < -0.1) colorClass = 'text-red-600 dark:text-red-400';
+
                 tbody.innerHTML += `<tr>
                     <td class="py-2 text-sm">${cat}</td>
                     <td class="py-2 text-sm">${target}%</td>
                     <td class="py-2 text-sm">${actualPct.toFixed(1)}%</td>
-                    <td class="py-2 text-sm font-bold ${actualPct - target >= -0.1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
-                        ${(actualPct - target).toFixed(1)}%
+                    <td class="py-2 text-sm font-bold ${colorClass}">
+                        ${diff.toFixed(1)}%
                     </td>
                 </tr>`;
             });
