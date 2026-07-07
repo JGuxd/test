@@ -115,6 +115,16 @@
             updateUI();
         }
 
+        // Logic to clear zero values on focus
+        function handleAmountFocus(el) {
+            const rawVal = el.value.replace(/[^0-9]/g, '');
+            if (rawVal === "0") {
+                el.value = "";
+            } else {
+                el.value = rawVal;
+            }
+        }
+
         function getPortfolioTotal() {
             const totalStr = document.getElementById('portfolioTotalDisplay').value;
             return parseFloat(totalStr.replace(/[^0-9]/g, '')) || 0;
@@ -133,7 +143,7 @@
                             ${assetTypes.map(t => `<option ${asset.type === t ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
                         <input type="text" value="${asset.amount.toLocaleString()}" class="bg-transparent border border-gray-300 dark:border-gray-500 p-2 rounded w-full text-gray-900 dark:text-white" 
-                               onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                               onfocus="handleAmountFocus(this)" 
                                onblur="formatAssetInput(this, ${idx})">
                         <div class="text-center font-bold text-gray-700 dark:text-gray-300">${((asset.amount/total)*100 || 0).toFixed(1)}%</div>
                         <button onclick="assets.splice(${idx},1); updateUI()" class="text-red-400 dark:text-red-300 font-bold">✕</button>
@@ -152,8 +162,8 @@
                 "Intermediate Bonds": "#10b981",
                 "Commodities": "#ef4444",
                 "Gold": "#d97706",
-                "Crypto": "#4c1d95", // Dark Purple
-                "Cash": "#064e3b" // Dark Green
+                "Crypto": "#4c1d95",
+                "Cash": "#064e3b"
             };
 
             const labels = assetTypes;
